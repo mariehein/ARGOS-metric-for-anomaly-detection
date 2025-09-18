@@ -1,8 +1,7 @@
-import NN_training_utils as tr
 import dataprep_utils as dp
 import argparse
-import sys
 import os
+from sklearn.model_selection import train_test_split
 
 parser = argparse.ArgumentParser(
     description='Run the full CATHODE analysis chain.',
@@ -53,11 +52,13 @@ if not os.path.exists(args.directory):
 	os.makedirs(args.directory)
 
 if args.cl_filename==None:
-    if args.classifier=="NN":
-        args.cl_filename = "hp_NN_default.yml"
-    else:
-        args.cl_filename = "hp_"+args.classifier+"_default.json"
+    args.cl_filename = "hp_"+args.classifier+"_default.yaml"
     
+if args.classifier=="NN":
+    import NN_utils as cl
+else: 
+    import BDT_utils as cl
+
 if args.input_set=="extended1":
     args.inputs=10
 elif args.input_set=="extended1_small":
@@ -82,6 +83,9 @@ print(args)
 
 if not args.randomize_seed:
     X_train, Y_train, X_test, Y_test = dp.classifier_data_prep(args)
+    if args.use_half_statistics:
+        X_train, X_eval, Y_train, Y_eval = train_test_split(X_train, Y_train, test_size=0.5, shuffle=True)
+    else: X_eval, Y_eval = None, None
 for i in range(args.start_at_run, args.N_runs):
     print()
     print("------------------------------------------------------")
@@ -94,4 +98,7 @@ for i in range(args.start_at_run, args.N_runs):
         if args.randomize_signal is not None:
             args.randomize_signal = i
         X_train, Y_train, X_test, Y_test = dp.classifier_data_prep(args)
-    tr.classifier_training(X_train, Y_train, X_test, Y_test, args, direc_run=direc_run)
+        if args.use_half_statistics:
+            X_train, X_eval, Y_train, Y_eval = train_test_split(X_train, Y_train, test_size=0.5, shuffle=True)
+        else: X_eval, Y_eval = None, None
+    cl.classifier_training(X_train, Y_train, X_test, Y_test, args, i, X_eval=X_eval, Y_eval=Y_eval, direc_run=direc_run)
