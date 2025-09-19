@@ -14,6 +14,7 @@ parser.add_argument('--cl_filename', type=str, default=None, help="For default H
 parser.add_argument('--directory', type=str, required=True)
 parser.add_argument('--use_half_statistics', default=False, action="store_true", help="Only uses half statistics for classifier, evaluates metrics on other half")
 parser.add_argument('--apply_random_rotation', default=False, action="store_true", help="Applies random rotation to input feature space")
+parser.add_argument('--signal_number', type=int, default=1000, help="number of signal events")
 
 # Need to pass file locations
 parser.add_argument('--data_file', type=str, default="/hpcwork/rwth0934/LHCO_dataset/extratau2/events_anomalydetection_v2.extratau_2.features.h5")
@@ -27,7 +28,6 @@ parser.add_argument('--include_DeltaR', default=False, action="store_true", help
 
 parser.add_argument('--signal_file', type=str, default=None, help="Specify different signal file")
 parser.add_argument('--three_pronged', default=False, action="store_true", help="Activate three-pronged signal file")
-parser.add_argument('--signal_number', type=int, default=1000, help="number of signal events")
 parser.add_argument('--minmass', type=float, default=3.3, help="SR lower edge in TeV")
 parser.add_argument('--maxmass', type=float, default=3.7, help="SR upper edge in TeV")
 parser.add_argument('--cl_norm', default=True, action="store_false", help="Classifier input normalisation (mean=0 and std=1)")
@@ -45,6 +45,7 @@ parser.add_argument('--randomize_signal', default=None, help="Set to int if sign
 parser.add_argument('--N_runs', type=int, default=10, help="Number of runs wanted for errors")
 parser.add_argument('--start_at_run', type=int, default=0, help="Allows restart at higher run numbers")
 parser.add_argument('--N_best_epochs', type=int, default=10, help="NN best epoch averaging")
+parser.add_argument('--BDT_ensemble_over', type=int, default=None, help="BDT ensembling")
 
 args = parser.parse_args()
 
@@ -52,12 +53,18 @@ if not os.path.exists(args.directory):
 	os.makedirs(args.directory)
 
 if args.cl_filename==None:
-    args.cl_filename = "hp_"+args.classifier+"_default.yaml"
+    args.cl_filename = "hp_files/default/hp_"+args.classifier+"_default.yaml"
     
 if args.classifier=="NN":
     import NN_utils as cl
 else: 
     import BDT_utils as cl
+
+if args.BDT_ensemble_over is None:
+    if args.classifier=="HGB":
+        args.BDT_ensemble_over=50
+    elif args.classifier=="AdaBoost":
+        args.BDT_ensemble_over=10
 
 if args.input_set=="extended1":
     args.inputs=10

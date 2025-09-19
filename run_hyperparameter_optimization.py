@@ -12,7 +12,8 @@ parser.add_argument('--mode', type=str, choices=["cathode", "cwola", "IAD", "sup
 parser.add_argument('--classifier', type=str, choices=["NN", "AdaBoost", "HGB"], required=True)
 parser.add_argument('--directory', type=str, required=True)
 parser.add_argument('--apply_random_rotation', default=False, action="store_true", help="Applies random rotation to input feature space")
-parser.add_argument('--hp_run_number', required=True, type=int)
+parser.add_argument('--signal_number', type=int, default=1000, help="number of signal events")
+parser.add_argument('--hp_run_number', required=True, type=int, help="start at 0, should be managed by bash file")
 
 # Need to pass file locations
 parser.add_argument('--data_file', type=str, default="/hpcwork/rwth0934/LHCO_dataset/extratau2/events_anomalydetection_v2.extratau_2.features.h5")
@@ -26,7 +27,6 @@ parser.add_argument('--include_DeltaR', default=False, action="store_true", help
 
 parser.add_argument('--signal_file', type=str, default=None, help="Specify different signal file")
 parser.add_argument('--three_pronged', default=False, action="store_true", help="Activate three-pronged signal file")
-parser.add_argument('--signal_number', type=int, default=1000, help="number of signal events")
 parser.add_argument('--minmass', type=float, default=3.3, help="SR lower edge in TeV")
 parser.add_argument('--maxmass', type=float, default=3.7, help="SR upper edge in TeV")
 parser.add_argument('--cl_norm', default=True, action="store_false", help="Classifier input normalisation (mean=0 and std=1)")

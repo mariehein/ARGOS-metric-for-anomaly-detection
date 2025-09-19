@@ -53,10 +53,11 @@ def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_eval=None
     for j in range(args.runs_per_hp_set):
         for i in range(args.averaging_runs):
             np.random.seed(i*args.runs_per_hp_set+j)
+            print("Tree number:", i*args.runs_per_hp_set+j)
             if args.classifier=="AdaBoost":
                 # 50-50 split of data to get randomized ensemble
                 X_train_local, X_val, Y_train_local, Y_val = train_test_split(X_train, Y_train, test_size=0.5)
-                tree = AdaBoostClassifier(base_estimator=DecisionTreeClassifier(**hyperparameters["estimator"])
+                tree = AdaBoostClassifier(estimator=DecisionTreeClassifier(**hyperparameters["estimator"])
                                         , learning_rate=hyperparameters["learning_rate"]
                                         , n_estimators=hyperparameters["n_estimators"])
                 _ = tree.fit(X_train_local, Y_train_local)
@@ -67,9 +68,9 @@ def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_eval=None
             val_SIC[j,i], val_loss[j,i] = metrics.get_val_metrics(tree.predict_proba(X_val, Y_val)[:,1])
             max_SIC[j,i] = metrics.max_sic(tree.predict_proba(X_test)[:,1], Y_test)
     
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_loss, axis=1), direc_run+"run"+str(args.hp_run_number)+"_val_loss.npy")
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_SIC, axis=1), direc_run+"run"+str(args.hp_run_number)+"_val_SIC.npy")
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(max_SIC, axis=1), direc_run+"run"+str(args.hp_run_number)+"_max_SIC.npy")
-    save_dict_to_zip(args.directory+"hp_opt.zip", hyperparameters, direc_run+"run"+str(args.hp_run_number)+"_hp.yaml")
+    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_loss, axis=1), "run"+str(args.hp_run_number)+"_val_loss.npy")
+    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_SIC, axis=1), "run"+str(args.hp_run_number)+"_val_SIC.npy")
+    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(max_SIC, axis=1), "run"+str(args.hp_run_number)+"_max_SIC.npy")
+    save_dict_to_zip(args.directory+"hp_opt.zip", hyperparameters, "run"+str(args.hp_run_number)+"_hp.yaml")
 
     

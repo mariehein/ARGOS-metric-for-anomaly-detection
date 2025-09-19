@@ -61,8 +61,8 @@ def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_val=None,
     params["epochs"] = int(100)
     print(params)
 
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_loss, axis=1), direc_run+"run"+str(args.hp_run_number)+"_val_loss.npy")
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_SIC, axis=1), direc_run+"run"+str(args.hp_run_number)+"_val_SIC.npy")
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(max_SIC, axis=1), direc_run+"run"+str(args.hp_run_number)+"_max_SIC.npy")
-    save_dict_to_zip(args.directory+"hp_opt.zip", params, direc_run+"run"+str(args.hp_run_number)+"_hp.yaml")
+    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_loss, axis=1), "run"+str(args.hp_run_number)+"_val_loss.npy")
+    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_SIC, axis=1), "run"+str(args.hp_run_number)+"_val_SIC.npy")
+    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(max_SIC, axis=1), "run"+str(args.hp_run_number)+"_max_SIC.npy")
+    save_dict_to_zip(args.directory+"hp_opt.zip", params, "run"+str(args.hp_run_number)+"_hp.yaml")
     shutil.rmtree(direc_run, ignore_errors=False, onerror=None)

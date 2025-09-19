@@ -4,6 +4,7 @@ import yaml
 import os
 import numpy as np
 import json
+import shutil
 
 def average_preds_metric(preds, metric, N_epochs=10):
     best_epochs = np.argsort(metric)[:N_epochs]
@@ -40,3 +41,5 @@ def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_eval=None
         val_SIC["val_loss"], val_loss["val_loss"] = metrics.get_val_metrics(average_preds_metric(val_preds, np.load(model._val_loss_path())), Y_eval)
         json.dump(val_SIC, open(direc_run+"val_SIC_averaged.json", 'w'))
         json.dump(val_loss, open(direc_run+"val_loss_averaged.json", 'w'))
+
+    shutil.rmtree(direc_run+"CLSF_models", ignore_errors=False, onerror=None)

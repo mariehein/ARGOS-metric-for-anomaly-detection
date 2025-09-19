@@ -1,1 +1,45 @@
 # Model Agnostic Optimisation of Weakly Supervised Anomaly Detection
+
+This repository contains the code for the following paper:
+
+*Data-driven optimization of weakly supervised anomaly detection*
+By Marie Hein, Gregor Kasieczka, Michael Krämer, Louis Moureaux, Alexander Mück, Tobias Quadfasel and David Shih.
+
+## Structure of the repository
+In addition to the code used to produce the paper runs, there are two folders in this repository: 
+- In "hp_files", both default and optimized hyperparameters can be found, meaning that it is possible to reproduce the paper plots without running the fulls optimisation, which is the most computationally expensive part.
+- In "run_cards", the run cards used to produce the paper runs saved. Their structure is explained below. 
+
+## Reproducing the paper results 
+In order to make the reproduction of the paper plots easier, the run cards are available in "run_cards".
+
+### Structure of the run cards
+There are two run types: 
+1. Default hyperparameter runs
+2. Hyperparameter optimization runs
+
+For the default hyperparameter runs, there is 
+1. ```default_classifier_runs.slurm```, i.e. a slurm script, which starts ```run_pipeline.py``` with the arguments it was passed. Save directories are built automatically from the passed arguments. 
+2. ```default_classifier_runs.sh```, i.e. a bash script, which loops over signal amounts, the different classifiers (NN, AdaBoost, HGB) and mode (IAD, cathode, cwola), as well as whether or not a random rotation should be applied to the data and passes them as arguments to the slurm scripts, which it submits. 
+
+For the hyperparameter optimization, runs are more complex. There are  
+1. multiple slurm scripts, namely for: 
+   1. Starting the hyperparameter optimization as an array job.
+   2. Picking the best hyperparameter runs after all array jobs are finished.
+   3. Producing classifier runs with half (see explanation in paper) and full statistics for the optimized hyperparameters for each metric after the job picking the best hyperparamter is complete.
+2. a bash script, which loops over all settings and submits slurm scripts. However, the runs submitted are more complex in this case as the optimization is a multi-step process. 
+
+In the version found in this github, all paper runs are submitted immediately. Depending on the computing resources available, it may be sensible/necessary to start runs a few at a time.
+
+### Adjusting to your system
+To run on a different cluster/file system, several things need to be adjusted in the run cards: 
+- Location of samples file for CATHODE 
+- Run directory
+- Adjust job submission file to submission system used on your computing cluster
+- Activattion of python environment
+
+Additionally, the location of the LHCO files (specifically using version from [2309.13111](https://arxiv.org/abs/2309.13111), which can be found in [this Githb](https://github.com/uhh-pd-ml/treebased_anomaly_detection)) in your file system needs to be either set as default or passed as an argument to both ```run_pipeline.py```and ```run_hyperparameter_optimization.py``` as the parameters ```--data_file``` and ```--extrabkg_file```.
+
+### Plotting the runs
+
+
