@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--mode', type=str, choices=["cathode", "cwola", "IAD", "supervised"], required=True)
 parser.add_argument('--classifier', type=str, choices=["NN", "AdaBoost", "HGB"], required=True)
 parser.add_argument('--cl_filename', type=str, default=None, help="For default HP change nothing")
+parser.add_argument('--cl_file_direc', type=str, default=None, help="For default HP change nothing")
 parser.add_argument('--directory', type=str, required=True)
 parser.add_argument('--use_half_statistics', default=False, action="store_true", help="Only uses half statistics for classifier, evaluates metrics on other half")
 parser.add_argument('--apply_random_rotation', default=False, action="store_true", help="Applies random rotation to input feature space")
@@ -100,6 +101,10 @@ for i in range(args.start_at_run, args.N_runs):
     print("Classifier run no. ", i)
     print()
     direc_run = args.directory+"run"+str(i)+"/"
+    if args.cl_file_direc is not None: 
+        if i==0:
+            hp_file_end = args.cl_filename
+        args.cl_filename = args.cl_file_direc + "run" + str(i) + hp_file_end
     if args.randomize_seed or args.randomize_signal is not None:
         args.set_seed = i
         if args.randomize_signal is not None:

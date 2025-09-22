@@ -21,7 +21,7 @@ parser.add_argument('--extrabkg_file', type=str, default="/hpcwork/rwth0934/LHCO
 parser.add_argument('--samples_file', type=str, default=None)
 
 # Dataset arguments
-parser.add_argument('--input_set', type=str, choices=["baseline", "baseline41" , "extended1", "extended2", "extended3", "extended7"])
+parser.add_argument('--input_set', type=str, default="baseline", choices=["baseline", "baseline41" , "extended1", "extended2", "extended3", "extended7"])
 parser.add_argument('--inputs', type=int, default=4)
 parser.add_argument('--include_DeltaR', default=False, action="store_true", help="appending Delta R to input feature set")
 
