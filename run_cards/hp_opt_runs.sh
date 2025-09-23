@@ -1,5 +1,7 @@
-signals=(0 50 100 150 200 250 300 400 500 600 700 800 900 1000)
-classifier=("HGB" "AdaBoost")
+#signals=(0 50 100 150 200 250 300 400 500 600 700 800 900 1000)
+signals=(500 600 700 800 900 1000)
+classifier=("NN")
+# "AdaBoost")
 # "AdaBoost" "NN")
 mode=("IAD")
 # "IAD" "cathode" "cwola")
@@ -15,7 +17,10 @@ for ((index=0; index<${#mode}; index++)); do
         for c in ${classifier}; do
             jid1=$(sbatch --parsable hp_opt_runs.slurm ${s} ${c} ${mode[$((${index}+1))]} ${rotated[$((${index}+1))]} ${samples_file})
             jid2=$(sbatch --dependency=afterany:${jid1} --parsable hp_pick_best.slurm ${s} ${c} ${mode[$((${index}+1))]} ${rotated[$((${index}+1))]} ${samples_file})
+            #jid2=$(sbatch --parsable hp_pick_best.slurm ${s} ${c} ${mode[$((${index}+1))]} ${rotated[$((${index}+1))]} ${samples_file})
             for m in ${metrics}; do
+                #sbatch hp_classifier_runs.slurm ${s} ${c} ${mode[$((${index}+1))]} ${rotated[$((${index}+1))]} ${samples_file} "True" ${m}
+                #sbatch hp_classifier_runs.slurm ${s} ${c} ${mode[$((${index}+1))]} ${rotated[$((${index}+1))]} ${samples_file} "False" ${m}
                 sbatch --dependency=afterany:${jid2} hp_classifier_runs.slurm ${s} ${c} ${mode[$((${index}+1))]} ${rotated[$((${index}+1))]} ${samples_file} "True" ${m}
                 sbatch --dependency=afterany:${jid2} hp_classifier_runs.slurm ${s} ${c} ${mode[$((${index}+1))]} ${rotated[$((${index}+1))]} ${samples_file} "False" ${m}
             done

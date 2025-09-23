@@ -43,6 +43,7 @@ else
 fi
 
 # final command
+echo ${direc}
 python pick_best_hyperparameters.py \
     --directory ${direc} \
     --file_save_directory ${hp_direc}

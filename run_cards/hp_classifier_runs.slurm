@@ -48,10 +48,10 @@ else
 fi
 
 if [[ "$half_data" == "True" ]]; then
-    direc="${direc}_half/Nsig_${signal_number}/"
+    direc="${direc}_half/${metric}/Nsig_${signal_number}/"
     extra_args="${extra_args} --use_half_statistics"
 else
-    direc="${direc}/Nsig_${signal_number}/"
+    direc="${direc}/${metric}/Nsig_${signal_number}/"
 fi
 
 # add samples_file if mode is cathode

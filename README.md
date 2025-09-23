@@ -23,13 +23,13 @@ For the default hyperparameter runs, there is
 2. ```default_classifier_runs.sh```, i.e. a bash script, which loops over signal amounts, the different classifiers (NN, AdaBoost, HGB) and mode (IAD, cathode, cwola), as well as whether or not a random rotation should be applied to the data and passes them as arguments to the slurm scripts, which it submits. 
 
 For the hyperparameter optimization, runs are more complex. There are  
-1. multiple slurm scripts, namely for: 
-   1. Starting the hyperparameter optimization as an array job.
-   2. Picking the best hyperparameter runs after all array jobs are finished.
-   3. Producing classifier runs with half (see explanation in paper) and full statistics for the optimized hyperparameters for each metric after the job picking the best hyperparamter is complete.
-2. a bash script, which loops over all settings and submits slurm scripts. However, the runs submitted are more complex in this case as the optimization is a multi-step process. 
+1. multiple slurm scripts, namely: 
+   1. ```hp_opt_runs.slurm```: Starting the hyperparameter optimization as an array job.
+   2. ```hp_pick_best.slurm```: Picking the best hyperparameter runs after all array jobs are finished.
+   3. ```hp_classifier_runs.slurm```: Producing classifier runs with half (see explanation in paper) and full statistics for the optimized hyperparameters for each metric after the job picking the best hyperparamter is complete.
+2. ```hp_opt_runs.sh```, i.e. a bash script, which loops over all settings and submits slurm scripts.
 
-In the version found in this github, all paper runs are submitted immediately. Depending on the computing resources available, it may be sensible/necessary to start runs a few at a time.
+In the version found in this github, all paper runs are submitted immediately. Depending on the computing resources available, it may be sensible/necessary to start runs a few at a time. This was done for the production runs for the paper.
 
 ### Adjusting to your system
 To run on a different cluster/file system, several things need to be adjusted in the run cards: 

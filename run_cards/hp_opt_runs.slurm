@@ -4,7 +4,7 @@
 #SBATCH --job-name=hp_opt_runs
 #SBATCH --account rwth0934
 
-#SBATCH --output=../output/hp_opt/%J.txt
+#SBATCH --output=../output/hp_opt/%A_%a.txt
 
 ### Compute time --> calculated generously
 #SBATCH --time=0-5:00:00
@@ -47,7 +47,7 @@ if [[ "$mode" == "cathode" ]]; then
     extra_args="$extra_args --samples_file ${samples_file}"
 fi
 
-#mkdir ${direc}
+mkdir ${direc}
 
 # final command
 python run_hyperparameter_optimization.py \
@@ -55,5 +55,5 @@ python run_hyperparameter_optimization.py \
     --directory ${direc} \
     --signal_number ${signal_number} \
     --mode ${mode} \
-    --hp_run_number ${SLURM_ARRAY_TASK_ID}
+    --hp_run_number ${SLURM_ARRAY_TASK_ID} \
     ${extra_args}

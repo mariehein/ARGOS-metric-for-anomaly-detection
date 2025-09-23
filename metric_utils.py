@@ -2,6 +2,28 @@ import numpy as np
 from sklearn.metrics import roc_curve, roc_auc_score, log_loss
 from pathlib import Path
 from sklearn.utils import class_weight
+from zipfile import ZipFile
+import io
+import yaml
+from filelock import FileLock
+
+def save_array_to_zip(zip_path, array, name):
+    """Save a numpy array into a zip as .npy"""
+    buf = io.BytesIO()
+    np.save(buf, array)
+    buf.seek(0)
+    lock = FileLock(zip_path+".lock")
+    with lock:
+        with ZipFile(zip_path, "a") as z:   # "a" = append
+            z.writestr(f"{name}.npy", buf.read())
+
+def save_dict_to_zip(zip_path, dictionary, name):
+    """Save a Python dict into a zip as .yaml"""
+    yaml_text = yaml.dump(dictionary)
+    lock = FileLock(zip_path+".lock")
+    with lock:
+        with ZipFile(zip_path, "a") as z:
+            z.writestr(f"{name}.yaml", yaml_text)
 
 def get_val_metrics(test_results, test_labels):
     '''for code readability calculates val_sic and val_loss in one go'''

@@ -1,28 +1,8 @@
 import numpy as np
 from sklearn.ensemble import HistGradientBoostingClassifier, AdaBoostClassifier
 from sklearn.model_selection import train_test_split
-import os
-
 from sklearn.tree import DecisionTreeClassifier
 import metric_utils as metrics
-import yaml
-import io
-from zipfile import ZipFile
-
-def save_array_to_zip(zip_path, array, name):
-    """Save a numpy array into a zip as .npy"""
-    buf = io.BytesIO()
-    np.save(buf, array)
-    buf.seek(0)
-    with ZipFile(zip_path, "a") as z:   # "a" = append
-        z.writestr(f"{name}.npy", buf.read())
-
-def save_dict_to_zip(zip_path, dictionary, name):
-    """Save a Python dict into a zip as .yaml"""
-    yaml_text = yaml.dump(dictionary)
-    with ZipFile(zip_path, "a") as z:
-        z.writestr(f"{name}.yaml", yaml_text)
-
 
 def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_eval=None, Y_eval=None, direc_run=None):
     np.random.seed(run)
@@ -68,9 +48,9 @@ def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_eval=None
             val_SIC[j,i], val_loss[j,i] = metrics.get_val_metrics(tree.predict_proba(X_val)[:,1], Y_val)
             max_SIC[j,i] = metrics.max_sic(tree.predict_proba(X_test)[:,1], Y_test)
     
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_loss, axis=1), "run"+str(args.hp_run_number)+"_val_loss")
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_SIC, axis=1), "run"+str(args.hp_run_number)+"_val_SIC")
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(max_SIC, axis=1), "run"+str(args.hp_run_number)+"_max_SIC")
-    save_dict_to_zip(args.directory+"hp_opt.zip", hyperparameters, "run"+str(args.hp_run_number)+"_hp")
+    metrics.save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_loss, axis=1), "run"+str(args.hp_run_number)+"_val_loss")
+    metrics.save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_SIC, axis=1), "run"+str(args.hp_run_number)+"_val_SIC")
+    metrics.save_array_to_zip(args.directory+"hp_opt.zip", np.mean(max_SIC, axis=1), "run"+str(args.hp_run_number)+"_max_SIC")
+    metrics.save_dict_to_zip(args.directory+"hp_opt.zip", hyperparameters, "run"+str(args.hp_run_number)+"_hp")
 
     

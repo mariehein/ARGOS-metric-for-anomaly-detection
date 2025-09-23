@@ -1,24 +1,8 @@
 import NN_model_utils as cl
-import yaml
 import os
 import numpy as np
-import io
-from zipfile import ZipFile
 import shutil
-
-def save_array_to_zip(zip_path, array, name):
-    """Save a numpy array into a zip as .npy"""
-    buf = io.BytesIO()
-    np.save(buf, array)
-    buf.seek(0)
-    with ZipFile(zip_path, "a") as z:   # "a" = append
-        z.writestr(f"{name}.npy", buf.read())
-
-def save_dict_to_zip(zip_path, dictionary, name):
-    """Save a Python dict into a zip as .yaml"""
-    yaml_text = yaml.dump(dictionary)
-    with ZipFile(zip_path, "a") as z:
-        z.writestr(f"{name}.yaml", yaml_text)
+import metric_utils as metrics
 
 def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_val=None, Y_val=None, direc_run=None):
     if direc_run is None:	
@@ -37,7 +21,7 @@ def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_val=None,
     params["lr"] = float(np.random.choice([0.01, 0.005, 0.001, 0.0005, 0.0001]))
     params["batch_size"] = int(np.random.choice([64, 128, 256, 512, 1024, 2048, 5096]))
     params["layers"] = [64,64,64]
-    params["epochs"] = int(10)
+    params["epochs"] = int(20)
     params["dropout"] = float(np.random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5]))
     params["weight_decay"] = float(np.random.choice([0,1e-4, 1e-3, 1e-2, 1e-5]))
     params["momentum"] = float(np.random.choice([0.9, 0.99, 0.8, 0.95]))
@@ -61,8 +45,8 @@ def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_val=None,
     params["epochs"] = int(100)
     print(params)
 
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_loss, axis=1), "run"+str(args.hp_run_number)+"_val_loss.npy")
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_SIC, axis=1), "run"+str(args.hp_run_number)+"_val_SIC.npy")
-    save_array_to_zip(args.directory+"hp_opt.zip", np.mean(max_SIC, axis=1), "run"+str(args.hp_run_number)+"_max_SIC.npy")
-    save_dict_to_zip(args.directory+"hp_opt.zip", params, "run"+str(args.hp_run_number)+"_hp.yaml")
+    metrics.save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_loss, axis=1), "run"+str(args.hp_run_number)+"_val_loss")
+    metrics.save_array_to_zip(args.directory+"hp_opt.zip", np.mean(val_SIC, axis=1), "run"+str(args.hp_run_number)+"_val_SIC")
+    metrics.save_array_to_zip(args.directory+"hp_opt.zip", np.mean(max_SIC, axis=1), "run"+str(args.hp_run_number)+"_max_SIC")
+    metrics.save_dict_to_zip(args.directory+"hp_opt.zip", params, "run"+str(args.hp_run_number)+"_hp")
     shutil.rmtree(direc_run, ignore_errors=False, onerror=None)
