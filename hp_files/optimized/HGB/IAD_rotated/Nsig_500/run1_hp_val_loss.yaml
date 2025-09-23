@@ -1,0 +1,10 @@
+class_weight: balanced
+early_stopping: true
+l2_regularization: 8.138021688847108
+learning_rate: 0.008966143652989105
+max_bins: 135
+max_depth: 6
+max_iter: 76
+max_leaf_nodes: 69
+validation_fraction: 0.5
+verbose: 0
