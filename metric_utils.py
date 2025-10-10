@@ -43,8 +43,8 @@ def val_sic(test_results, test_labels):
     inds = np.nonzero(fpr)
     tpr = tpr[inds]
     fpr = fpr[inds]
-    max_SIC_tpr = np.max(tpr/np.sqrt(fpr)-np.sqrt(tpr))
-    return max_SIC_tpr
+    max_SIC_fpr = np.max(tpr/np.sqrt(fpr)-np.sqrt(fpr))
+    return max_SIC_fpr
 
 def val_loss(test_results, test_labels):
     '''Calculates Val loss from predictions and labels (not one-hot encoded)'''

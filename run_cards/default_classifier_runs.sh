@@ -1,7 +1,7 @@
 signals=(0 50 100 150 200 250 300 400 500 600 700 800 900 1000)
 classifier=("HGB" "AdaBoost" "NN")
-mode=("IAD" "IAD" "cathode" "cwola")
-rotated=("False" "True" "False" "False")
+mode=("IAD" "IAD" "cwola")
+rotated=("False" "True" "False")
 
 samples_file="/hpcwork/rwth0934/LHCO_dataset/ranit_samples/ensembling/window_scan_0/window_5/try_0/samples_SR.npy" 
 #need to replace samples_file for different cluster 

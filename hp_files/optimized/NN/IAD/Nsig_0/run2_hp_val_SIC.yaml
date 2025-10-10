@@ -1,10 +1,10 @@
-batch_size: 2048
-dropout: 0.2
+batch_size: 1024
+dropout: 0.1
 epochs: 100
 layers:
 - 64
 - 64
 - 64
-lr: 0.001
-momentum: 0.9
-weight_decay: 1.0e-05
+lr: 0.005
+momentum: 0.8
+weight_decay: 0.0

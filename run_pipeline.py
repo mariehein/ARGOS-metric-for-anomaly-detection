@@ -16,6 +16,7 @@ parser.add_argument('--directory', type=str, required=True)
 parser.add_argument('--use_half_statistics', default=False, action="store_true", help="Only uses half statistics for classifier, evaluates metrics on other half")
 parser.add_argument('--apply_random_rotation', default=False, action="store_true", help="Applies random rotation to input feature space")
 parser.add_argument('--signal_number', type=int, default=1000, help="number of signal events")
+parser.add_argument('--unhelpful_features', default=False, action="store_true")
 
 # Need to pass file locations
 parser.add_argument('--data_file', type=str, default="/hpcwork/rwth0934/LHCO_dataset/extratau2/events_anomalydetection_v2.extratau_2.features.h5")
@@ -48,6 +49,8 @@ parser.add_argument('--start_at_run', type=int, default=0, help="Allows restart 
 parser.add_argument('--N_best_epochs', type=int, default=10, help="NN best epoch averaging")
 parser.add_argument('--BDT_ensemble_over', type=int, default=None, help="BDT ensembling")
 
+parser.add_argument('--density_estimation', default=False, action="store_true")
+
 args = parser.parse_args()
 
 if not os.path.exists(args.directory):
@@ -66,6 +69,9 @@ if args.BDT_ensemble_over is None:
         args.BDT_ensemble_over=50
     elif args.classifier=="AdaBoost":
         args.BDT_ensemble_over=10
+
+if args.unhelpful_features:
+    args.input_set="extended1"
 
 if args.input_set=="extended1":
     args.inputs=10
@@ -91,9 +97,6 @@ print(args)
 
 if not args.randomize_seed:
     X_train, Y_train, X_test, Y_test = dp.classifier_data_prep(args)
-    if args.use_half_statistics:
-        X_train, X_eval, Y_train, Y_eval = train_test_split(X_train, Y_train, test_size=0.5, shuffle=True)
-    else: X_eval, Y_eval = None, None
 for i in range(args.start_at_run, args.N_runs):
     print()
     print("------------------------------------------------------")
@@ -102,7 +105,7 @@ for i in range(args.start_at_run, args.N_runs):
     print()
     direc_run = args.directory+"run"+str(i)+"/"
     if args.cl_file_direc is not None: 
-        if i==0:
+        if i==args.start_at_run:
             hp_file_end = args.cl_filename
         args.cl_filename = args.cl_file_direc + "run" + str(i) + hp_file_end
     if args.randomize_seed or args.randomize_signal is not None:
@@ -110,7 +113,10 @@ for i in range(args.start_at_run, args.N_runs):
         if args.randomize_signal is not None:
             args.randomize_signal = i
         X_train, Y_train, X_test, Y_test = dp.classifier_data_prep(args)
-        if args.use_half_statistics:
-            X_train, X_eval, Y_train, Y_eval = train_test_split(X_train, Y_train, test_size=0.5, shuffle=True)
-        else: X_eval, Y_eval = None, None
+    if args.use_half_statistics:
+        if i==args.start_at_run:
+            X_train_global = X_train
+            Y_train_global = Y_train
+        X_train, X_eval, Y_train, Y_eval = train_test_split(X_train_global, Y_train_global, test_size=0.5, shuffle=True, random_state=i)
+    else: X_eval, Y_eval = None, None
     cl.classifier_training(X_train, Y_train, X_test, Y_test, args, i, X_eval=X_eval, Y_eval=Y_eval, direc_run=direc_run)

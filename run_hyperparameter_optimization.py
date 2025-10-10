@@ -14,6 +14,8 @@ parser.add_argument('--directory', type=str, required=True)
 parser.add_argument('--apply_random_rotation', default=False, action="store_true", help="Applies random rotation to input feature space")
 parser.add_argument('--signal_number', type=int, default=1000, help="number of signal events")
 parser.add_argument('--hp_run_number', required=True, type=int, help="start at 0, should be managed by bash file")
+parser.add_argument('--unhelpful_features', default="False", action="store_true")
+
 
 # Need to pass file locations
 parser.add_argument('--data_file', type=str, default="/hpcwork/rwth0934/LHCO_dataset/extratau2/events_anomalydetection_v2.extratau_2.features.h5")
@@ -44,6 +46,9 @@ parser.add_argument('--randomize_signal', default=None, help="Set to int if sign
 parser.add_argument('--runs_per_hp_set', default=10, type=int, help="Used to get error bands in plots")
 parser.add_argument('--averaging_runs', default=None, type=int, help="Used to average runs to get more stable optimization")
 
+
+parser.add_argument('--density_estimation', default=False, action="store_true")
+
 args = parser.parse_args()
 
 if args.classifier=="NN":
@@ -59,6 +64,10 @@ if args.averaging_runs is None:
         args.averaging_runs=1
     else:
         args.averaging_runs=10
+
+
+if args.unhelpful_features:
+    args.input_set=="extended1"
 
 if args.input_set=="extended1":
     args.inputs=10

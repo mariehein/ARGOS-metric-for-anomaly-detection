@@ -250,6 +250,9 @@ def classifier_data_prep(args, samples=None):
     innerdata = data_all[innermask]
     outerdata = data_all[~innermask]
 
+    if args.density_estimation: 
+        return innerdata[:, :args.inputs+1], outerdata[:, :args.inputs+1]
+
     if args.mode=="cwola":
         mask = (outerdata[:,0]>args.minmass-args.ssb_width) & (outerdata[:,0]<args.maxmass+args.ssb_width)
         samples_train = outerdata[mask]
@@ -262,7 +265,7 @@ def classifier_data_prep(args, samples=None):
     extrabkg1 = extra_bkg[:312858]
     extrabkg2 = extra_bkg[312858:]
 
-    if args.samples_file is None:
+    if args.mode=="IAD":
         samples_train = extrabkg1[40000:]
 
     if args.mode=="supervised":
@@ -307,5 +310,9 @@ def classifier_data_prep(args, samples=None):
         X_test, _ = normalisation.forward(X_test)
 
     print("Train set: ", len(X_train), "; Test set: ", len(X_test))
+
+    if args.unhelpful_features:
+        X_train = X_train[:,-4:]
+        X_test = X_test[:,-4:]
 
     return X_train, Y_train, X_test, Y_test

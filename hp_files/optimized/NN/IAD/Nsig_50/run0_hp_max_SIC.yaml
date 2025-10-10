@@ -1,4 +1,4 @@
-batch_size: 256
+batch_size: 2048
 dropout: 0.5
 epochs: 100
 layers:
@@ -7,4 +7,4 @@ layers:
 - 64
 lr: 0.001
 momentum: 0.99
-weight_decay: 0.0
+weight_decay: 0.001
