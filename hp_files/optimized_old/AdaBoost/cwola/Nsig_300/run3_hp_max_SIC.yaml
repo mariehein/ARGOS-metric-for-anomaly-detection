@@ -1,7 +1,0 @@
-estimator:
-  class_weight: balanced
-  max_depth: 4
-  max_leaf_nodes: 41
-  min_samples_leaf: 37
-learning_rate: 0.01861737018550231
-n_estimators: 30
