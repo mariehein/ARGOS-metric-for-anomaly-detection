@@ -353,6 +353,90 @@ def plot_selection(mode, signals, signals_plot, gen_direc, plotting_directory, s
 	fig.savefig(plotting_directory+"1D_" + name+"_"+metric+"_selected.pdf")
 	plt.show()
 
+def plot_selection_multiple(mode, signals, signals_plot, gen_direc, plotting_directory, second_axis=True, loc="lower right", plot_default=True, rotated=False, metrics="val_SIC", metric_opt="val_SIC", classifiers=["NN", "HGB", "AdaBoost"]):    
+	fig2, ax2 = plt.subplots(figsize=(7, 5))
+
+	for metric in metrics:
+		fig, ax = plt.subplots(1,3, figsize=(15,5))
+		if metric_opt is None: 
+			metric_opt = metric
+
+		if plot_default:
+			sic = np.zeros((len(signals),len(points)+2))
+			sic_low = np.zeros((len(signals),len(points)+2))
+			sic_upp = np.zeros((len(signals),len(points)+2))
+
+			if default_classifier=="NN":
+				roc_name = metric_NN_files_names[metric_opt]#metric_NN_files_names[metric]
+			else:
+				roc_name = "BDT"
+			if rotated:
+				folder = gen_direc+default_classifier+"/default_hp/"+mode+"_rotated/"
+			else:
+				folder = gen_direc+default_classifier+"/default_hp/"+mode+"/"
+			for j,s in enumerate(signals):
+				sic[j], sic_low[j], sic_upp[j] = read_ROC_SIC_1D(roc_name, points, folder + "Nsig_"+str(s)+"/")
+			plot_sic(ax[2], sic[:,index], sic_low[:,index], sic_upp[:,index], signals, "grey", "Default", linestyle="dashed")
+
+		#if second_axis: 
+		#	ax2 = ax[0].twinx()
+		#	ax2.set_ylabel(metric_names[metric])
+
+		sic = np.zeros((len(classifiers), len(signals),10))
+		sic_half = np.zeros((len(classifiers), len(signals),10))
+		metric_values = np.zeros((len(classifiers), len(signals), 10))
+		for i,c in enumerate(classifiers): 
+			if c =="NN":
+				roc_name = metric_NN_files_names[metric_opt]
+				is_NN = True
+			else: 
+				roc_name = "BDT"
+				is_NN = False
+			if rotated:
+				folder = gen_direc+c+"/optimized_hp/"+mode+"_rotated/"+metric_opt+"/"
+				folder_half = gen_direc+c+"/optimized_hp/"+mode+"_rotated_half/"+metric_opt+"/"
+				name = mode+"_rotated"
+			else:
+				folder = gen_direc+c+"/optimized_hp/"+mode+"/"+metric_opt+"/"
+				folder_half = gen_direc+c+"/optimized_hp/"+mode+"_half/"+metric_opt+"/"
+				name=mode
+
+			for j,s in enumerate(signals):
+				sic[i,j] = read_ROC_SIC_1D(roc_name, points, folder + "Nsig_"+str(s)+"/", return_full_array=True)
+				sic_half[i,j] = read_ROC_SIC_1D(roc_name, points, folder_half + "Nsig_"+str(s)+"/", return_full_array=True)
+				if metric=="max_SIC":
+					metric_values[i,j] = sic[i,j]
+				else:
+					metric_values[i,j] = read_metric(folder_half+ "Nsig_"+str(s)+"/", metric, is_NN)
+			plot_sic(ax[2], np.median(sic[i], axis=-1), np.percentile(sic[i], 16, axis=-1), np.percentile(sic[i], 84, axis=-1), signals, classifier_colors[c], c)
+			plot_sic(ax[0], np.median(metric_values[i], axis=-1), np.percentile(metric_values[i], 16, axis=-1), np.percentile(metric_values[i], 84, axis=-1), signals, classifier_colors[c], c)
+			plot_sic(ax[1], np.median(sic_half[i], axis=-1), np.percentile(sic_half[i], 16, axis=-1), np.percentile(sic_half[i], 84, axis=-1), signals, classifier_colors[c], c)
+			
+			#if second_axis:
+			#	ax2.plot(signals, np.median(metric_values[i], axis=-1), color=classifier_colors[c], linestyle="dotted")
+
+		select = np.argmax(metric_maximize[metric]*metric_values, axis=0)
+		sic_full_select = np.array([[sic[select[i,j],i,j] for j in range(10)] for i in range(len(signals))])
+		sic_half_select = np.array([[sic_half[select[i,j],i,j] for j in range(10)] for i in range(len(signals))])
+		metric_select = np.array([[metric_values[select[i,j],i,j] for j in range(10)] for i in range(len(signals))])
+			
+		plot_sic(ax[2], np.median(sic_full_select, axis=-1), np.percentile(sic_full_select, 16, axis=-1), np.percentile(sic_full_select, 84, axis=-1), signals, "black", "Selected")
+		plot_sic(ax[0], np.median(metric_select, axis=-1), np.percentile(metric_select, 16, axis=-1), np.percentile(metric_select, 84, axis=-1), signals, "black", "Selected")
+		plot_sic(ax[1], np.median(sic_half_select, axis=-1), np.percentile(sic_half_select, 16, axis=-1), np.percentile(sic_half_select, 84, axis=-1), signals, "black", "Selected")
+
+		plot_sic(ax2, np.median(sic_full_select, axis=-1), np.percentile(sic_full_select, 16, axis=-1), np.percentile(sic_full_select, 84, axis=-1), signals, metric_colors[metric], metric_names[metric])
+
+		plot_end_1D_multiple(ax[1], signals_plot,title="Half statistics", legend=False)
+		metmin = np.min(np.percentile(metric_values, 16, axis=-1))
+		metmax = np.max(np.percentile(metric_values, 84, axis=-1))
+		plot_end_1D_multiple(ax[0], signals_plot,title="Metrics", ylabel=metric_names[metric], legend=False, ylims=(metmin-(metmax-metmin)*0.05, metmax+(metmax-metmin)*0.05))
+		plot_end_1D_multiple(ax[2], signals_plot,title="Full statistics", legend=True, loc=loc)
+		fig.tight_layout()
+		fig.savefig(plotting_directory+"1D_" + name+"_"+metric+"_selected.pdf")
+		#plt.show()
+	plot_end_1D(fig2, ax2, signals_plot, name+"_selected", ylim=max_SIC_lims)
+
+
 def plot_feature_selection(mode, signals, signals_plot, gen_direc, plotting_directory, ylim=None, second_axis=True, loc="lower right", plot_default=True, rotated=False, metric="val_SIC", feature_sets=["baseline", "extended1", "extended2", "extended3", "DeltaR"], classifier="HGB"):    
 	fig, ax = plt.subplots(1,3, figsize=(15,5))
 
@@ -428,79 +512,4 @@ def plot_feature_selection(mode, signals, signals_plot, gen_direc, plotting_dire
 	plot_end_1D_multiple(ax[2], signals_plot, ylim=ylim,title="Full statistics", legend=True, loc=loc)
 	fig.tight_layout()
 	fig.savefig(plotting_directory+"1D_" + name+"_"+metric+"_feature_selected.pdf")
-	plt.show()
-
-def plot_rotation_selection(mode, signals, signals_plot, gen_direc, plotting_directory, second_axis=True, loc="lower right", plot_default=False, rotated=False, metric="val_SIC", classifier="HGB"):    
-	fig, ax = plt.subplots(1,3, figsize=(15,5))
-
-	rotation_states = [False, True]
-
-	if plot_default:
-		sic = np.zeros((len(signals),len(points)+2))
-		sic_low = np.zeros((len(signals),len(points)+2))
-		sic_upp = np.zeros((len(signals),len(points)+2))
-
-		if default_classifier=="NN":
-			roc_name = metric_NN_files_names[metric]
-		else:
-			roc_name = "BDT"
-		if rotated:
-			folder = gen_direc+default_classifier+"/default_hp/"+mode+"_rotated/"
-		else:
-			folder = gen_direc+default_classifier+"/default_hp/"+mode+"/"
-		for j,s in enumerate(signals):
-			sic[j], sic_low[j], sic_upp[j] = read_ROC_SIC_1D(roc_name, points, folder + "Nsig_"+str(s)+"/")
-		plot_sic(ax[2], sic[:,index], sic_low[:,index], sic_upp[:,index], signals, "grey", "Default", linestyle="dashed")
-
-	#if second_axis: 
-	#	ax2 = ax[0].twinx()
-	#	ax2.set_ylabel(metric_names[metric])
-	name = mode
-
-	sic = np.zeros((len(rotation_states), len(signals),10))
-	sic_half = np.zeros((len(rotation_states), len(signals),10))
-	metric_values = np.zeros((len(rotation_states), len(signals), 10))
-	for i, rotated in enumerate(rotation_states): 
-		if classifier =="NN":
-			roc_name = metric_NN_files_names[metric]
-			is_NN = True
-		else: 
-			roc_name = "BDT"
-			is_NN = False
-		if rotated:
-			folder = gen_direc+classifier+"/default_hp/"+mode+"_rotated/"
-			folder_half = gen_direc+classifier+"/default_hp/"+mode+"_rotated_half/"
-			label = "Rotated"
-			f = "useless"
-		else:
-			folder = gen_direc+classifier+"/default_hp/"+mode+"/"
-			folder_half = gen_direc+classifier+"/default_hp/"+mode+"_half/"
-			label = "Standard"
-			f= None
-
-		for j,s in enumerate(signals):
-			sic[i,j] = read_ROC_SIC_1D(roc_name, points, folder + "Nsig_"+str(s)+"/", return_full_array=True)
-			sic_half[i,j] = read_ROC_SIC_1D(roc_name, points, folder_half + "Nsig_"+str(s)+"/", return_full_array=True)
-			metric_values[i,j] = read_metric(folder_half+ "Nsig_"+str(s)+"/", metric, is_NN)
-		plot_sic(ax[2], np.median(sic[i], axis=-1), np.percentile(sic[i], 16, axis=-1), np.percentile(sic[i], 84, axis=-1), signals, feature_set_colors[f], label)
-		plot_sic(ax[0], np.median(metric_values[i], axis=-1), np.percentile(metric_values[i], 16, axis=-1), np.percentile(metric_values[i], 84, axis=-1), signals, feature_set_colors[f], label)
-		plot_sic(ax[1], np.median(sic_half[i], axis=-1), np.percentile(sic_half[i], 16, axis=-1), np.percentile(sic_half[i], 84, axis=-1), signals, feature_set_colors[f], label)
-		
-
-	select = np.argmax(metric_maximize[metric]*metric_values, axis=0)
-	sic_full_select = np.array([[sic[select[i,j],i,j] for j in range(10)] for i in range(len(signals))])
-	sic_half_select = np.array([[sic_half[select[i,j],i,j] for j in range(10)] for i in range(len(signals))])
-	metric_select = np.array([[metric_values[select[i,j],i,j] for j in range(10)] for i in range(len(signals))])
-		
-	plot_sic(ax[2], np.median(sic_full_select, axis=-1), np.percentile(sic_full_select, 16, axis=-1), np.percentile(sic_full_select, 84, axis=-1), signals, "black", "Selected")
-	plot_sic(ax[0], np.median(metric_select, axis=-1), np.percentile(metric_select, 16, axis=-1), np.percentile(metric_select, 84, axis=-1), signals, "black", "Selected")
-	plot_sic(ax[1], np.median(sic_half_select, axis=-1), np.percentile(sic_half_select, 16, axis=-1), np.percentile(sic_half_select, 84, axis=-1), signals, "black", "Selected")
-
-	plot_end_1D_multiple(ax[1], signals_plot,title="Half statistics", legend=False)
-	metmin = np.min(np.percentile(metric_values, 16, axis=-1))
-	metmax = np.max(np.percentile(metric_values, 84, axis=-1))
-	plot_end_1D_multiple(ax[0], signals_plot,title="Metrics", ylabel=metric_names[metric], legend=False, ylims=(metmin-(metmax-metmin)*0.05, metmax+(metmax-metmin)*0.05))
-	plot_end_1D_multiple(ax[2], signals_plot,title="Full statistics", legend=True, loc=loc)
-	fig.tight_layout()
-	fig.savefig(plotting_directory+"1D_" + name+"_"+metric+"_rotation_selected.pdf")
 	plt.show()

@@ -1,0 +1,10 @@
+batch_size: 512
+dropout: 0.1
+epochs: 100
+layers:
+- 64
+- 64
+- 64
+lr: 0.005
+momentum: 0.8
+weight_decay: 1.0e-05

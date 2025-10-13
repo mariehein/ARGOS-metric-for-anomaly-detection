@@ -8,8 +8,10 @@ from DE_model_utils import ConditionalNormalizingFlow
 from DE_model_utils import LogitScaler
 
 def sample(model, m, n_samples, scaler):
-    m_samples = np.random.choice(m, n_samples, replace=True)
-    X_samples = model.sample(n_samples, m_samples)
+    m_samples = np.random.choice(m, n_samples, replace=True).reshape((n_samples, 1))
+    print(m_samples.shape, n_samples)
+    X_samples = model.sample(m=m_samples)[:,0,:]
+    print(X_samples.shape)
     X_samples = scaler.inverse_transform(X_samples)
     samples = np.hstack([m_samples, X_samples])
     return samples
@@ -30,7 +32,7 @@ def run_DE(args, innerdata, outerdata, direc_run):
     
     flow_model = ConditionalNormalizingFlow(save_path=direc_run,
                                             num_inputs=X_train.shape[1],
-                                            early_stopping=True,
+                                            early_stopping=False,
                                             verbose=False, num_blocks=int(hyperparameters["blocks"]),
                                             batch_norm=bool(hyperparameters["use_batch_norm"]), 
                                             lr=float(hyperparameters["learning_rate"]), 
@@ -39,5 +41,5 @@ def run_DE(args, innerdata, outerdata, direc_run):
                                             )
 
     flow_model.fit(X_train, m_train, X_val, m_val)
-    np.save(direc_run+"samples_inner.npy",sample(flow_model, innerdata[:,0:1], n_samples=args.N_samples, scaler=scaler))
-    np.save(direc_run+"samples_outer.npy",sample(flow_model, outerdata[:,0:1], n_samples=args.N_samples, scaler=scaler))
+    np.save(direc_run+"samples_inner.npy",sample(flow_model, innerdata[:,0], n_samples=args.N_samples, scaler=scaler))
+    np.save(direc_run+"samples_outer.npy",sample(flow_model, outerdata[:,0], n_samples=args.N_samples, scaler=scaler))

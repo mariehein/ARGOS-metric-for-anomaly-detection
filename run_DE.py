@@ -40,7 +40,7 @@ parser.add_argument('--randomize_seed', default=False, action="store_true", help
 parser.add_argument('--randomize_signal', default=None, help="Set to int if signal randomization wanted")
 
 #Classifier Arguments
-parser.add_argument('--N_runs', type=int, default=5, help="Number of runs wanted for DE sampling")
+parser.add_argument('--N_runs', type=int, default=3, help="Number of runs wanted for DE sampling")
 parser.add_argument('--start_at_run', type=int, default=0, help="Allows restart at higher run numbers")
 
 parser.add_argument('--density_estimation', default=True, action="store_false")

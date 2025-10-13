@@ -546,7 +546,7 @@ class ConditionalNormalizingFlow(BaseEstimator):
         with torch.no_grad():
             m_torch = torch.from_numpy(m).type(torch.FloatTensor).to(
                 self.device)
-            X_torch = self.model.sample(1, context=m_torch).view(n_samples, -1)
+            X_torch = self.model.sample(1, context=m_torch)#.view(n_samples, -1)
         return X_torch.cpu().detach().numpy()
 
     def predict_log_proba(self, X, m=None):
