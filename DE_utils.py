@@ -37,8 +37,11 @@ def run_DE(args, innerdata, outerdata, direc_run):
                                             batch_norm=bool(hyperparameters["use_batch_norm"]), 
                                             lr=float(hyperparameters["learning_rate"]), 
                                             batch_size=int(hyperparameters["batch_size"]), num_layers=int(hyperparameters["layers"]),
-                                            epochs=int(hyperparameters["epochs"]), num_hidden=int(hyperparameters["hidden"])
-                                            )
+                                            epochs=int(hyperparameters["epochs"]), num_hidden=int(hyperparameters["hidden"]), 
+                                            weight_decay = float(hyperparameters["weight_decay"]), 
+                                            optimizer_name=str(hyperparameters["optimizer"]), 
+                                            lr_scheduler=bool(hyperparameters["lr_scheduler"])
+                                           )
 
     flow_model.fit(X_train, m_train, X_val, m_val)
     np.save(direc_run+"samples_inner.npy",sample(flow_model, innerdata[:,0], n_samples=args.N_samples, scaler=scaler))

@@ -2,7 +2,6 @@ import dataprep_utils as dp
 import argparse
 import os
 from sklearn.model_selection import train_test_split
-import DE_utils as DE
 import numpy as np
 
 parser = argparse.ArgumentParser(
@@ -10,7 +9,8 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 # parameters to vary for the used runs
-parser.add_argument('--DE_filename', type=str, default="hp_files/DE.yaml", help="For default HP change nothing")
+parser.add_argument('--DE_filename', type=str, default=None, help="For default HP change nothing")
+parser.add_argument('--DE_type', type=str, default="Maf", choices=["MAF", "CFM"])
 parser.add_argument('--directory', type=str, required=True)
 parser.add_argument('--apply_random_rotation', default=False, action="store_true", help="Applies random rotation to input feature space")
 parser.add_argument('--signal_number', type=int, default=1000, help="number of signal events")
@@ -39,13 +39,27 @@ parser.add_argument('--set_seed', type=int, default=1, help="Changes seed used f
 parser.add_argument('--randomize_seed', default=False, action="store_true", help="Randomizes shuffling")
 parser.add_argument('--randomize_signal', default=None, help="Set to int if signal randomization wanted")
 
+# HP for CFM handled via arguments
+parser.add_argument('--epochs', type=int, default=100)
+parser.add_argument('--batch_size', type=int, default=4096)
+parser.add_argument('--frequencies', type=int, default=3)
+parser.add_argument('--num_blocks', type=int, default=4)
+parser.add_argument('--hidden_dim', type=int, default=256)
+parser.add_argument('--non_linear_context', action='store_true', help='if non linear context is used')
+
 #Classifier Arguments
-parser.add_argument('--N_runs', type=int, default=3, help="Number of runs wanted for DE sampling")
+parser.add_argument('--N_runs', type=int, default=1, help="Number of runs wanted for DE sampling")
 parser.add_argument('--start_at_run', type=int, default=0, help="Allows restart at higher run numbers")
 
 parser.add_argument('--density_estimation', default=True, action="store_false")
 
 args = parser.parse_args()
+
+if args.DE_type =="MAF":
+    import DE_utils as DE
+    args.DE_filename = "hp_files/DE.yaml"
+else: 
+    import DE_CFM_utils as DE
 
 if not os.path.exists(args.directory):
 	os.makedirs(args.directory)
@@ -91,7 +105,7 @@ samples_outer = np.zeros((args.N_runs*args.N_samples,args.inputs+1))
 for i in range(args.N_runs):
     samples_inner[i*args.N_samples:(i+1)*args.N_samples] = np.load(args.directory+"run"+str(i)+"/samples_inner.npy")
     samples_outer[i*args.N_samples:(i+1)*args.N_samples] = np.load(args.directory+"run"+str(i)+"/samples_outer.npy")
-np.random.shuffle(samples_inner)
-np.random.shuffle(samples_outer)
-np.save(args.directory+"samples_inner.npy", samples_inner)
-np.save(args.directory+"samples_outer.npy", samples_outer)
+inds = np.array(range(args.N_runs*args.N_samples))
+np.random.shuffle(inds)
+np.save(args.directory+"samples_inner.npy", samples_inner[inds])
+np.save(args.directory+"samples_outer.npy", samples_outer[inds])

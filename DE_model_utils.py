@@ -149,13 +149,13 @@ class ConditionalNormalizingFlow(BaseEstimator):
                  tail_bound=10, batch_norm=False, lr=0.0001,
                  weight_decay=0.000001, early_stopping=False,
                  patience=10, no_gpu=False, val_split=0.2, batch_size=256,
-                 drop_last=True, epochs=100, verbose=False):
+                 drop_last=True, epochs=100, verbose=False, lr_scheduler=False):
 
         self.model_type = model_type
         self.optimizer_name = optimizer_name
         if model_type != "MAF":
             raise NotImplementedError
-        if optimizer_name != "Adam":
+        if optimizer_name not in ["Adam", "AdamW"]:
             raise NotImplementedError
 
         self.save_path = save_path
@@ -224,11 +224,22 @@ class ConditionalNormalizingFlow(BaseEstimator):
                                if p.requires_grad)
         print(f"ConditionalNormalizingFlow has {total_parameters} parameters")
 
-        self.optimizer = optim.Adam(self.model.parameters(),
-                                    lr=lr, weight_decay=weight_decay)
+        if optimizer_name =="Adam":
+            self.optimizer = optim.Adam(self.model.parameters(),
+                                        lr=lr, weight_decay=weight_decay)
+        else:
+            self.optimizer = optim.AdamW(self.model.parameters(),
+                                        lr=lr, weight_decay=weight_decay)
 
         # defaulting to eval mode, switching to train mode in fit()
         self.model.eval()
+
+        self.lr_scheduler_boolean = lr_scheduler
+        if lr_scheduler: 
+            self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 
+                                                                           mode="min", factor=0.5, 
+                                                                           patience=10, threshold=1e-3, cooldown=0,
+                                                                           min_lr=1e-6, verbose=False)
 
         if load:
             self.load_best_model()
@@ -321,6 +332,8 @@ class ConditionalNormalizingFlow(BaseEstimator):
             val_loss = compute_loss_over_batches(self.model, val_loader,
                                                  device=self.device)[0]
 
+            if self.lr_scheduler_boolean:
+                self.lr_scheduler.step(val_loss)
             if np.isnan(val_loss):
                 raise ValueError("Training yields NaN validation loss!")
 

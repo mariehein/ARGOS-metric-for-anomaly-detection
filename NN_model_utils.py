@@ -77,7 +77,7 @@ class NeuralNetworkClassifier(BaseEstimator):
     def __init__(self, save_path=None, load=False, n_inputs=4,
                  layers=[64, 64, 64], lr=0.001, early_stopping=False,
                  patience=10, no_gpu=False, val_split=0.2, batch_size=128,
-                 epochs=100, use_class_weights=True, dropout=None, weight_decay=0, momentum=0.9, verbose=False, save_model=True):
+                 epochs=100, use_class_weights=True, dropout=None, weight_decay=0, momentum=0.9, verbose=False, save_model=True, metric_tracking=True):
 
         self.save_path = save_path
         if save_path is not None:
@@ -107,6 +107,7 @@ class NeuralNetworkClassifier(BaseEstimator):
         self.weight_decay = weight_decay
         self.momentum = momentum
 
+        self.metric_tracking = metric_tracking
         self.model.to(self.device)
 
         # defaulting to eval mode, switching to train mode in fit()
@@ -324,26 +325,29 @@ class NeuralNetworkClassifier(BaseEstimator):
                 epoch_val_SIC = metrics.val_sic(preds, val_labels)
                 epoch_val_loss /= (i+1)
 
-                preds = np.zeros(len(X_test))
-                test_labels = np.zeros((len(X_test)))
-                num_elements = len(test_loader.dataset)
-                num_batches = len(test_loader)
-                batch_size = test_loader.batch_size
-                num_sig = 0
-                for i, batch in enumerate(test_loader):
-                    batch_inputs, batch_labels = batch
-                    batch_inputs, batch_labels = (batch_inputs.to(self.device),
-                                                  batch_labels.to(self.device))
-                    start = i * batch_size
-                    end = start + batch_size
-                    if i==num_batches-1:
-                        end = num_elements
-                    num_sig += sum(batch_labels.cpu().numpy())
-                    preds[start:end] = self.model(batch_inputs).cpu().numpy()[:,0]
-                    test_labels[start:end] = batch_labels.cpu().numpy()[:,0]
-                epoch_max_SIC = metrics.max_sic(preds, test_labels)
-                print(num_sig, num_elements)
-                print(epoch_max_SIC)
+                if self.metric_tracking:
+                    preds = np.zeros(len(X_test))
+                    test_labels = np.zeros((len(X_test)))
+                    num_elements = len(test_loader.dataset)
+                    num_batches = len(test_loader)
+                    batch_size = test_loader.batch_size
+                    num_sig = 0
+                    for i, batch in enumerate(test_loader):
+                        batch_inputs, batch_labels = batch
+                        batch_inputs, batch_labels = (batch_inputs.to(self.device),
+                                                    batch_labels.to(self.device))
+                        start = i * batch_size
+                        end = start + batch_size
+                        if i==num_batches-1:
+                            end = num_elements
+                        num_sig += sum(batch_labels.cpu().numpy())
+                        preds[start:end] = self.model(batch_inputs).cpu().numpy()[:,0]
+                        test_labels[start:end] = batch_labels.cpu().numpy()[:,0]
+                    epoch_max_SIC = metrics.max_sic(preds, test_labels)
+                    print(num_sig, num_elements)
+                    print(epoch_max_SIC)
+                else:
+                    epoch_max_SIC=-1.
 
             print("Validation loss:", epoch_val_loss)
 

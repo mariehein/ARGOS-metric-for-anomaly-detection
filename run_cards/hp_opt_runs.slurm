@@ -7,7 +7,7 @@
 #SBATCH --output=../output/hp_opt/%A_%a.txt
 
 ### Compute time --> calculated generously
-#SBATCH --time=0-5:00:00
+#SBATCH --time=0-10:00:00
 #SBATCH --mem=12G
 #SBATCH --ntasks=1
 #SBATCH --array=0-99:1
@@ -44,7 +44,7 @@ fi
 
 # add samples_file if mode is cathode
 if [[ "$mode" == "cathode" ]]; then
-    extra_args="$extra_args --samples_file ${samples_file}"
+    extra_args="$extra_args --samples_file ${samples_file}Nsig_${signal_number}/samples_inner.npy"
 fi
 
 mkdir ${direc}

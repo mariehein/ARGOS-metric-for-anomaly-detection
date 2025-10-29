@@ -251,6 +251,8 @@ def classifier_data_prep(args, samples=None):
     outerdata = data_all[~innermask]
 
     if args.density_estimation: 
+        np.save(args.directory+"innerdata.npy", innerdata)
+        np.save(args.directory+"outerdata.npy", outerdata)
         return innerdata[:, :args.inputs+1], outerdata[:, :args.inputs+1]
 
     if args.mode=="cwola":
