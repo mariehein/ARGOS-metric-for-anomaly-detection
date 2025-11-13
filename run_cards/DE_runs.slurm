@@ -50,7 +50,7 @@ python run_DE.py \
     --input_set ${features} \
     --signal_number ${signal_number} \
     --directory ${direc} \
-    --start_at_run 5  \
+    --start_at_run 0  \
     --N_runs 10 \
     --DE_type "CFM" \
     --epochs ${epochs} --batch_size ${batch_size} \

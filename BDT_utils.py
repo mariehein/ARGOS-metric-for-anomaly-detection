@@ -17,7 +17,7 @@ def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_eval=None
         hyperparameters = yaml.safe_load(stream)
         
     test_results = np.zeros((len(X_test)))
-    if args.use_half_statistics:
+    if X_eval is not None:
         eval_results = np.zeros((len(X_eval)))
 
     for j in range(args.BDT_ensemble_over):
@@ -49,3 +49,5 @@ def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_eval=None
         val_SIC, val_loss = metrics.get_val_metrics(eval_results, Y_eval)
         np.save(direc_run+"val_SIC.npy", val_SIC)
         np.save(direc_run+"val_loss.npy", val_loss)
+    elif X_eval is not None:
+        metrics.plot_roc(eval_results, Y_eval,title="sample_test",directory=args.directory)

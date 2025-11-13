@@ -96,7 +96,7 @@ if args.three_pronged: # change if not run on HPC RWTH
 print(args)
 
 if not args.randomize_seed:
-    X_train, Y_train, X_test, Y_test = dp.classifier_data_prep(args)
+    X_train, Y_train, X_test, Y_test, X_eval, Y_eval = dp.classifier_data_prep(args)
 for i in range(args.start_at_run, args.N_runs):
     print()
     print("------------------------------------------------------")
@@ -118,5 +118,4 @@ for i in range(args.start_at_run, args.N_runs):
             X_train_global = X_train
             Y_train_global = Y_train
         X_train, X_eval, Y_train, Y_eval = train_test_split(X_train_global, Y_train_global, test_size=0.5, shuffle=True, random_state=i)
-    else: X_eval, Y_eval = None, None
     cl.classifier_training(X_train, Y_train, X_test, Y_test, args, i, X_eval=X_eval, Y_eval=Y_eval, direc_run=direc_run)

@@ -36,10 +36,11 @@ To run on a different cluster/file system, several things need to be adjusted in
 - Location of samples file for CATHODE 
 - Run directory
 - Adjust job submission file to submission system used on your computing cluster
-- Activattion of python environment
+- Activation of python environment
 
 Additionally, the location of the LHCO files (specifically using version from [2309.13111](https://arxiv.org/abs/2309.13111), which can be found in [this Githb](https://github.com/uhh-pd-ml/treebased_anomaly_detection)) in your file system needs to be either set as default or passed as an argument to both ```run_pipeline.py```and ```run_hyperparameter_optimization.py``` as the parameters ```--data_file``` and ```--extrabkg_file```.
 
 ### Plotting the runs
+The plotting notebook ```plotting.ipynb``` is kept as minimal as possible. If the save directories in the run cards are only adjusted by changing ```gen_direc``` in the slurm files, all plots should be reproducible by only adjusting ```general_directory``` in ```plotting.ipynb```. The detailed plotting functions can be found in ```plotting_utils_paper.py```. All necessary calculations as well as the construction of the regular plotting paths are performed in those functions based on the passed parameters. 
 
 

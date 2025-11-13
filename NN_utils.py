@@ -34,12 +34,18 @@ def classifier_training(X_train, Y_train, X_test, Y_test, args, run, X_eval=None
 
     if X_eval is not None: 
         val_preds = model.get_all_predictions(X_eval)
-        val_SIC = {}
-        val_loss = {}
-        val_SIC["val_SIC"], val_loss["val_SIC"] = metrics.get_val_metrics(average_preds_metric(val_preds, -np.load(model._val_SIC_path())), Y_eval)
-        val_SIC["max_SIC"], val_loss["max_SIC"] = metrics.get_val_metrics(average_preds_metric(val_preds, -np.load(model._max_SIC_path())), Y_eval)
-        val_SIC["val_loss"], val_loss["val_loss"] = metrics.get_val_metrics(average_preds_metric(val_preds, np.load(model._val_loss_path())), Y_eval)
-        json.dump(val_SIC, open(direc_run+"val_SIC_averaged.json", 'w'))
-        json.dump(val_loss, open(direc_run+"val_loss_averaged.json", 'w'))
+        if args.use_half_statistics:
+            val_SIC = {}
+            val_loss = {}
+            val_SIC["val_SIC"], val_loss["val_SIC"] = metrics.get_val_metrics(average_preds_metric(val_preds, -np.load(model._val_SIC_path())), Y_eval)
+            val_SIC["max_SIC"], val_loss["max_SIC"] = metrics.get_val_metrics(average_preds_metric(val_preds, -np.load(model._max_SIC_path())), Y_eval)
+            val_SIC["val_loss"], val_loss["val_loss"] = metrics.get_val_metrics(average_preds_metric(val_preds, np.load(model._val_loss_path())), Y_eval)
+            json.dump(val_SIC, open(direc_run+"val_SIC_averaged.json", 'w'))
+            json.dump(val_loss, open(direc_run+"val_loss_averaged.json", 'w'))
+        else: 
+            print("AUC val SIC: %.3f" % metrics.plot_roc(average_preds_metric(val_preds, -np.load(model._val_SIC_path())), Y_eval, title="sample_test_val_sic",directory=args.directory))
+            print("AUC max SIC: %.3f" % metrics.plot_roc(average_preds_metric(val_preds, -np.load(model._max_SIC_path())), Y_eval, title="sample_test_max_sic",directory=args.directory))
+            print("AUC val loss: %.3f" % metrics.plot_roc(average_preds_metric(val_preds, np.load(model._val_loss_path())), Y_eval, title="sample_test_val_loss",directory=args.directory))
+    
 
     shutil.rmtree(direc_run+"CLSF_models", ignore_errors=False, onerror=None)

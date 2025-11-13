@@ -1,9 +1,7 @@
-# signals=(0 50 100 150 200 250 300 400) AdaBoost cathode running
-signals=(500 600 700 800 900 1000)
-
-classifier=("AdaBoost")
-mode=("cathode")
-rotated=("False")
+signals=(0 50 100 150 200 250 300 400500 600 700 800 900 1000)
+classifier=("HGB" "NN" "AdaBoost")
+mode=("IAD" "cwola" "cathode")
+rotated=("False" "False" "False")
 metrics=("val_SIC" "max_SIC" "val_loss")
 
 samples_direc=/hpcwork/zu992399/model-agnostic-model-selection/DE/baseline/CFM/

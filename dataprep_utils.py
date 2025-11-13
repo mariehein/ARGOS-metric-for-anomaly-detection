@@ -262,6 +262,7 @@ def classifier_data_prep(args, samples=None):
         if args.samples_file is None: 
             raise ValueError("Samples file can not be None for cathode")
         samples_train = np.load(args.samples_file)[:int(len(innerdata)*args.oversampling_factor)]
+        samples_add = np.load(args.samples_file)[int(len(innerdata)*args.oversampling_factor):int(len(innerdata)*args.oversampling_factor)+400000]
         samples_train = np.concatenate((samples_train, np.zeros((len(samples_train),1))), axis=1)
 
     extrabkg1 = extra_bkg[:312858]
@@ -317,4 +318,13 @@ def classifier_data_prep(args, samples=None):
         X_train = X_train[:,-4:]
         X_test = X_test[:,-4:]
 
-    return X_train, Y_train, X_test, Y_test
+    if args.mode == "cathode":
+        if args.cl_norm:
+            samples_add, _ = normalisation.forward(samples_add[:,1:args.inputs+1])
+        X_eval_add = np.concatenate((samples_add, X_test[Y_test==0]), axis=0)
+        Y_eval_add =  np.append(np.zeros(len(samples_add)), np.ones(len(X_test[Y_test==0])))
+    else: 
+        X_eval_add = None
+        Y_eval_add = None
+
+    return X_train, Y_train, X_test, Y_test, X_eval_add, Y_eval_add
