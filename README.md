@@ -2,8 +2,8 @@
 
 This repository contains the code for the following paper:
 
-*Data-driven optimization of weakly supervised anomaly detection*
-By Marie Hein, Gregor Kasieczka, Michael Krämer, Louis Moureaux, Alexander Mück, Tobias Quadfasel and David Shih.
+*How to pick the best anomaly detector?*
+By Marie Hein, Gregor Kasieczka, Michael Krämer, Louis Moureaux, Alexander Mück and David Shih.
 
 ## Structure of the repository
 In addition to the code used to produce the paper runs, there are two folders in this repository: 
