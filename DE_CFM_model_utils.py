@@ -23,6 +23,51 @@ Code from https://github.com/rd804/cut_and_count_FM
 def log_normal(x,mu=0.0,sigma=1.0):
     return Normal(mu, sigma).log_prob(x).sum(-1)
 
+def log_prob(model: torch.nn.Module , x: Tensor, context: Tensor,
+             start:float=0.0, end:int=1.0) -> Tensor:
+        # get the identity matrix with shape (batch_size, features, features)
+        identity = torch.eye(x.shape[-1], dtype=x.dtype, device=x.device)
+        # move the last dimension to the first dimension
+        identity = identity.expand(*x.shape, x.shape[-1]).movedim(-1, 0)
+
+
+        def augmented(t: Tensor, x: Tensor, ladj: Tensor) -> Tensor:
+
+            with torch.enable_grad():
+                x = x.requires_grad_()
+                t_array = torch.ones(x.shape[0], 1).to(x.device) * t
+                input_to_model = torch.cat([x,t_array], dim=-1)
+                #print(t)
+                #input_to_model = torch.cat([x,t_array], dim=-1)
+            #    print(input_to_model.shape)
+            #    print(context.shape)
+                vt = model(input_to_model, context=context)
+
+            #print(vt.shape)
+
+            jacobian = torch.autograd.grad(
+                vt, x, identity, create_graph=True, is_grads_batched=True
+            )[0]
+            # calculate the trace of the jacobian
+            trace = torch.einsum("i...i", jacobian)
+
+
+          #  print(trace)
+
+            return vt, trace * 1e1  # 1e-2 is a scaling factor for numerical stability
+
+        # initial value for the log_abs_det_jacobian (the subsequent contributions
+        # are added to this value in the odeint call below)
+        ladj = torch.zeros_like(x[..., 0])
+        # integrate the augmented function from t=0 to t=1
+        # --> returns the latent space z and the integral over the trace of the
+        #     jacobian
+
+        z, ladj = odeint(augmented, (x, ladj), start, end, phi=model.parameters())
+
+        return  z, log_normal(z) + ladj * 1e-1  # rescale the ladj to undo the scaling above
+
+
 class torch_wrapper(torch.nn.Module):
     """Wraps model to torchdyn compatible format."""
 

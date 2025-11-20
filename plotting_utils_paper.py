@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-import matplotlib.cm as col
-import matplotlib as mpl
 import warnings
+from zipfile import ZipFile
+import numpy as np
 import json
 warnings.filterwarnings("ignore")
 from matplotlib.lines import Line2D
@@ -27,6 +27,7 @@ metric_colors = {"val_SIC": "dodgerblue", "val_loss": "mediumvioletred", "max_SI
 metric_names = {"val_SIC": "ARGOS", "val_loss": "BCE", "max_SIC": "Max SIC"}
 metric_NN_files_names= {"val_SIC": "val_sic", "val_loss": "val_loss", "max_SIC": "max_sic"}
 metric_maximize= {"val_SIC": 1, "val_loss": -1, "max_SIC": 1}
+sig_colors = ["orange", "dodgerblue", "mediumvioletred"]
 mode_name = {"IAD": "IAD", "cathode": "CATHODE", "cwola": "CWoLa Hunting"}
 default_metric = "val_sic"
 default_classifier = "NN"
@@ -226,7 +227,8 @@ def plot_optimized_runs(mode, signals, signals_plot, gen_direc, plotting_directo
 		plot_end_1D_multiple(ax[i], signals_plot,title=mode_name[mode]+": "+c, legend=legend, loc=loc)
 	
 	fig.tight_layout()
-	fig.savefig(plotting_directory+"1D_"+mode+"{'_rotated' if rotated else ''}_optimized.pdf")
+	end = '_rotated' if rotated else ''
+	fig.savefig(plotting_directory+"1D_"+mode+end+"_optimized.pdf")
 	plt.show()
 
 
@@ -381,3 +383,38 @@ def plot_feature_selection_single_panel(mode, signals, signals_plot, gen_direc, 
 	plot_sic(ax, np.median(sic_full_select, axis=-1), np.percentile(sic_full_select, 16, axis=-1), np.percentile(sic_full_select, 84, axis=-1), signals, "black", "Selected")
 	plot_end_1D(fig, ax, signals_plot, name+"feature_selected_single_panel", ylim=40, loc=loc)
 
+def scatter_plot_single(mode, classifier, gen_direc, plotting_directory, signals=[400,700,1000]):
+	val_SIC = np.zeros(100)
+	val_loss = np.zeros(100)
+	max_SIC = np.zeros(100)
+	fig, ax = plt.subplots(1,2, figsize=(10,5))
+	for i,s in enumerate(signals):
+		with ZipFile(gen_direc+classifier+"/run_optimization/"+mode+"/Nsig_"+str(s)+"/hp_opt.zip", "r") as z:
+			for k in range(100):
+				with z.open("run"+str(k)+"_max_SIC.npy") as f:
+					max_SIC[k] = np.mean(np.load(f))
+				with z.open("run"+str(k)+"_val_SIC.npy") as f:
+					val_SIC[k] = np.mean(np.load(f))
+				with z.open("run"+str(k)+"_val_loss.npy") as f:
+					val_loss[k] = np.mean(np.load(f))
+		ax[0].scatter(val_SIC, max_SIC, color=sig_colors[i], label = r"$N_{sig}=$"+str(s))
+		ax[1].scatter(val_loss, max_SIC, color=sig_colors[i], label = r"$N_{sig}=$"+str(s))
+
+		ax[0].set_xlabel(metric_names["val_SIC"])
+		ax[1].set_xlabel(metric_names["val_loss"])
+		ax[0].set_ylabel(metric_names["max_SIC"])
+		ax[1].set_ylabel(metric_names["max_SIC"])
+		ax[0].set_ylim(0,17)
+		ax[1].set_ylim(0,17)
+		ax[1].set_xlim(0.6925,0.6935)
+		ax[0].set_xlim(0,0.22)
+
+	title= mode_name[mode]+": "+classifier
+	if title is not None:
+		ax_title(ax[0], title)
+		ax_title(ax[1], title)
+			
+
+	ax[0].legend(loc="lower right")
+	fig.tight_layout()
+	fig.savefig(plotting_directory+"hp_metric_correlation_"+mode+"_"+classifier+".pdf")

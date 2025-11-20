@@ -4,11 +4,12 @@ This repository contains the code for the following paper:
 
 *How to pick the best anomaly detector?*
 By Marie Hein, Gregor Kasieczka, Michael Krämer, Louis Moureaux, Alexander Mück and David Shih.
+[arxiv:2511.14832](https://arxiv.org/abs/2511.14832)
 
 ## Structure of the repository
 In addition to the code used to produce the paper runs, there are two folders in this repository: 
-- In "hp_files", both default and optimized hyperparameters can be found, meaning that it is possible to reproduce the paper plots without running the fulls optimisation, which is the most computationally expensive part.
-- In "run_cards", the run cards used to produce the paper runs saved. Their structure is explained below. 
+- In "hp_files", both default and optimized hyperparameters can be found, meaning that it is possible to reproduce the paper plots without running the full optimisation, which is the most computationally expensive part.
+- In "run_cards", the run cards used to produce the paper runs are saved. Their structure is explained below. 
 
 ## Reproducing the paper results 
 In order to make the reproduction of the paper plots easier, the run cards are available in "run_cards".
